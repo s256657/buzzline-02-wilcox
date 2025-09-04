@@ -1,5 +1,5 @@
 """
-kafka_consumer_case.py
+kafka_consumer_wilcox.py
 
 Consume messages from a Kafka topic and process them.
 """
@@ -10,6 +10,7 @@ Consume messages from a Kafka topic and process them.
 
 # Import packages from Python Standard Library
 import os
+from collections import Counter
 
 # Import external packages
 from dotenv import load_dotenv
@@ -44,26 +45,36 @@ def get_kafka_consumer_group_id() -> int:
 
 
 #####################################
-# Define a function to process a single message
+# Define a function to process messages
 # #####################################
 
 
+# Global counter for player name counts
+player_counter = Counter()
+
+def extract_player_name(message: str) -> str:
+    """
+    Extracts the player name from a standardized message.
+    Example: "My Favorite Chiefs player is Mahomes!" -> "Mahomes"
+    """
+    prefix = "My Favorite Chiefs player is "
+    if message.startswith(prefix):
+        return message[len(prefix):].replace("!", "").strip()
+    return "Unknown"
+
 def process_message(message: str) -> None:
     """
-    Process a single message.
-
-    For now, this function simply logs the message.
-    You can extend it to perform other tasks, like counting words
-    or storing data in a database.
-
-    Args:
-        message (str): The message to process.
+    Process a single message by extracting and counting the player name.
     """
-    logger.info(f"Processing message: {message}")
+    player_name = extract_player_name(message)
+    player_counter[player_name] += 1
+
+    logger.info(f"Processed message for player: {player_name}")
+    logger.info(f"{player_name} count: {player_counter[player_name]}")
 
 
 #####################################
-# Define main function for this module
+# Main Function
 #####################################
 
 
@@ -77,15 +88,12 @@ def main() -> None:
     """
     logger.info("START consumer.")
 
-    # fetch .env content
     topic = get_kafka_topic()
     group_id = get_kafka_consumer_group_id()
     logger.info(f"Consumer: Topic '{topic}' and group '{group_id}'...")
 
-    # Create the Kafka consumer using the helpful utility function.
     consumer = create_kafka_consumer(topic, group_id)
 
-     # Poll and process messages
     logger.info(f"Polling messages from topic '{topic}'...")
     try:
         for message in consumer:
@@ -99,6 +107,11 @@ def main() -> None:
     finally:
         consumer.close()
         logger.info(f"Kafka consumer for topic '{topic}' closed.")
+
+        # Show final count summary
+        logger.info("=== Final Player Message Counts ===")
+        for player, count in player_counter.items():
+            logger.info(f"{player}: {count}")
 
     logger.info(f"END consumer for topic '{topic}' and group '{group_id}'.")
 
