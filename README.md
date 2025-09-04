@@ -1,4 +1,4 @@
-# buzzline-02-case
+# buzzline-02-wilcox
 
 Streaming data is often too big for any one machine. Apache Kafka is a popular streaming platform that uses publish-subscribe patterns:
 
@@ -103,6 +103,14 @@ Mac/Linux:
 ```zsh
 source .venv/bin/activate
 python3 -m consumers.kafka_consumer_case
+```
+
+## Task 5. Customized producer and consumer programs
+New files now exist with customized messages to run. The commands to run are below and are based on MacOS
+
+```zsh
+python3 -m producers.kafka_producer_wilcox
+python3 -m consumers.kafka_consumer_wilcox
 ```
 
 ## Later Work Sessions
